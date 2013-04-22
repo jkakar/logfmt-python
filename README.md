@@ -40,7 +40,7 @@ for result in parse(input):
     print result
 ```
 
-Running this program will produce this output:
+This program produces this output:
 
 ```
 {'key1': 'value1'}
