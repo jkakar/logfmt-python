@@ -5,7 +5,9 @@ def parse(stream):
     @return: Yields a C{dict} for each line in the stream.
     """
     for line in stream:
-        yield parse_line(line)
+        result = parse_line(line)
+        if result:
+            yield result
 
 
 SCAN_KEY = 1

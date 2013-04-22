@@ -8,8 +8,23 @@ class ParseTest(TestCase):
     """Tests for L{logfmt.parse}."""
 
     def test_parse_empty_stream(self):
-        """L{parse} is a no-op if the specified stream is empty."""
+        """L{parse} is effectively a no-op if the specified stream is empty."""
         stream = StringIO()
+        self.assertEqual([], list(parse(stream)))
+
+    def test_parse_empty_line(self):
+        """
+        L{parse} is effectively a no-op if the line being parsed is empty.
+        """
+        stream = StringIO('')
+        self.assertEqual([], list(parse(stream)))
+
+    def test_parse_whitespace_line(self):
+        """
+        L{parse} is effectively a no-op if the line being parse doesn't
+        contain any key/value pairs.
+        """
+        stream = StringIO(' \t  ')
         self.assertEqual([], list(parse(stream)))
 
     def test_parse_key_without_value(self):
@@ -88,4 +103,10 @@ class ParseTest(TestCase):
         self.assertEqual([{'key1': 'a double-quoted " value',
                            'key2': None,
                            'key3': 'value3'}],
+                         list(parse(stream)))
+
+    def test_parse_many_lines(self):
+        """L{parse} correctly parses all lines in the stream."""
+        stream = StringIO('key1=value1\nkey2=value2')
+        self.assertEqual([{'key1': 'value1'}, {'key2': 'value2'}],
                          list(parse(stream)))
