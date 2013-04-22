@@ -4,5 +4,56 @@ def parse(stream):
     @param stream: A file-like object to read lines from.
     @return: Yields a C{dict} for each line in the stream.
     """
-    return
-    yield
+    for line in stream:
+        yield parse_line(line)
+
+
+SCAN_KEY = 1
+SCAN_EQUAL = 2
+SCAN_VALUE = 3
+
+def parse_line(line):
+    """Parse a line from the log stream.
+
+    @param line: A line that contains logfmt-styled key/value pairs.
+    @return: A C{dict} containing key/value pairs from the line.
+    """
+    result = {}
+    key = []
+    value = []
+    state = SCAN_KEY
+    last_character = None
+    for character in line:
+        if state is SCAN_KEY:
+            if character == '=':
+                state = SCAN_VALUE
+            elif character == '"':
+                pass
+            elif ord(character) > ord(' '):
+                key.append(character)
+            elif character == ' ' and key:
+                state = SCAN_EQUAL
+        elif state is SCAN_EQUAL:
+            if character == '=':
+                state = SCAN_VALUE
+            elif character != ' ':
+                result[''.join(key).strip()] = None
+                key = []
+                key.append(character)
+                state = SCAN_KEY
+        elif state is SCAN_VALUE:
+            if character == ' ':
+                if value:
+                    state = SCAN_KEY
+                    result[''.join(key).strip()] = ''.join(value).strip()
+                    key = []
+                    value = []
+            else:
+                value.append(character)
+        last_character = character
+
+    if key and not value:
+        result[''.join(key).strip()] = None
+    elif value:
+        result[''.join(key).strip()] = ''.join(value).strip()
+    return result
