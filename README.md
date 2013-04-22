@@ -1,4 +1,10 @@
-Python package for parsing log lines in the `logfmt` style.
+# Logfmt for Python
+
+Python package for parsing log lines in the `logfmt` style.  See the
+original project by Blake Mizerany and Keith Rarick for information
+about `logfmt` conventions and use:
+
+  https://github.com/kr/logfmt
 
 ## Setting up a development environment
 
