@@ -45,15 +45,12 @@ def parse_line(line):
                 key.append(character)
                 state = SCAN_KEY
         elif state is SCAN_VALUE:
-            if character == ' ' and not quoted_value:
-                if value:
-                    state = SCAN_KEY
-                    result[''.join(key).strip()] = ''.join(value).strip()
-                    key = []
-                    value = []
-                    quoted_value = False
-            elif quoted_value and character == '\\':
-                pass
+            if character == ' ' and not quoted_value and value:
+                state = SCAN_KEY
+                result[''.join(key).strip()] = ''.join(value).strip()
+                key = []
+                value = []
+                quoted_value = False
             elif character == '"':
                 if quoted_value:
                     if last_character == '\\':
@@ -66,6 +63,8 @@ def parse_line(line):
                         quoted_value = False
                 else:
                     quoted_value = True
+            elif quoted_value and character == '\\':
+                pass
             else:
                 value.append(character)
         last_character = character

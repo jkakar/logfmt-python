@@ -27,6 +27,26 @@ Run tests:
 
     make check
 
+## Using logfmt
+
+Easily process lines from `logfmt` formatted input:
+
+```python
+from cStringIO import StringIO
+from logfmt import parse
+
+input = StringIO('\n'.join(['key1=value1', 'key2=value2']))
+for result in parse(input):
+    print result
+```
+
+Running this program will produce this output:
+
+```
+{'key1': 'value1'}
+{'key2': 'value2'}
+```
+
 ## License
 
 Copyright (C) 2013 Jamshed Kakar.
