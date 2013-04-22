@@ -19,10 +19,11 @@ def parse_line(line):
     @return: A C{dict} containing key/value pairs from the line.
     """
     result = {}
-    key = []
-    value = []
     state = SCAN_KEY
     last_character = None
+    key = []
+    value = []
+    quoted_value = False
     for character in line:
         if state is SCAN_KEY:
             if character == '=':
@@ -42,12 +43,27 @@ def parse_line(line):
                 key.append(character)
                 state = SCAN_KEY
         elif state is SCAN_VALUE:
-            if character == ' ':
+            if character == ' ' and not quoted_value:
                 if value:
                     state = SCAN_KEY
                     result[''.join(key).strip()] = ''.join(value).strip()
                     key = []
                     value = []
+                    quoted_value = False
+            elif quoted_value and character == '\\':
+                pass
+            elif character == '"':
+                if quoted_value:
+                    if last_character == '\\':
+                        value.append(character)
+                    else:
+                        state = SCAN_KEY
+                        result[''.join(key).strip()] = ''.join(value).strip()
+                        key = []
+                        value = []
+                        quoted_value = False
+                else:
+                    quoted_value = True
             else:
                 value.append(character)
         last_character = character

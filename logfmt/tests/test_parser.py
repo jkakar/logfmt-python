@@ -61,10 +61,31 @@ class ParseTest(TestCase):
         self.assertEqual([{'key1': 'value1', 'key2': None}],
                          list(parse(stream)))
 
-    def test_parse_key_with_quoted_value(self):
+    def test_parse_key_with_double_quoted_value(self):
         """
         L{parse} correctly parses values that are surrounded by double-quotes.
         """
         stream = StringIO('key="a double-quoted value"')
         self.assertEqual([{'key': 'a double-quoted value'}],
+                         list(parse(stream)))
+
+    def test_parse_key_with_double_quoted_value_and_double_quote(self):
+        """
+        L{parse} correctly parses values that are surrounded by double-quotes.
+        An escape double-quote included in the value is considered to be part
+        of it.
+        """
+        stream = StringIO('key="a double-quoted \\" value"')
+        self.assertEqual([{'key': 'a double-quoted " value'}],
+                         list(parse(stream)))
+
+    def test_parse_mixed_key_value_pairs(self):
+        """
+        L{parse} correctly parses different kinds of keys and values on the
+        same line.
+        """
+        stream = StringIO('key1="a double-quoted \\" value" key2 key3=value3')
+        self.assertEqual([{'key1': 'a double-quoted " value',
+                           'key2': None,
+                           'key3': 'value3'}],
                          list(parse(stream)))
