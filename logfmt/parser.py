@@ -1,76 +1,70 @@
-def parse(stream):
-    """Generator yields C{dict}s from logfmt-styled lines read from the stream.
+# -*- coding: utf-8 -*-
 
-    @param stream: A file-like object to read lines from.
-    @return: Yields a C{dict} for each line in the stream.
-    """
-    for line in stream:
-        result = parse_line(line)
-        if result:
-            yield result
+GARBAGE = 0
+KEY = 1
+EQUAL = 2
+IVALUE = 3
+QVALUE = 4
 
-
-SCAN_KEY = 1
-SCAN_EQUAL = 2
-SCAN_VALUE = 3
 
 def parse_line(line):
-    """Parse a line from the log stream.
-
-    @param line: A line that contains logfmt-styled key/value pairs.
-    @return: A C{dict} containing key/value pairs from the line.
-    """
-    result = {}
-    state = SCAN_KEY
-    last_character = None
-    key = []
-    value = []
-    quoted_value = False
-    for character in line:
-        if state is SCAN_KEY:
-            if character == '=':
-                state = SCAN_VALUE
-            elif character == '"':
-                pass
-            elif ord(character) > ord(' '):
-                key.append(character)
-            elif character == ' ' and key:
-                state = SCAN_EQUAL
-        elif state is SCAN_EQUAL:
-            if character == '=':
-                state = SCAN_VALUE
-            elif character != ' ':
-                result[''.join(key).strip()] = None
-                key = []
-                key.append(character)
-                state = SCAN_KEY
-        elif state is SCAN_VALUE:
-            if character == ' ' and not quoted_value and value:
-                state = SCAN_KEY
-                result[''.join(key).strip()] = ''.join(value).strip()
-                key = []
-                value = []
-                quoted_value = False
-            elif character == '"':
-                if quoted_value:
-                    if last_character == '\\':
-                        value.append(character)
-                    else:
-                        state = SCAN_KEY
-                        result[''.join(key).strip()] = ''.join(value).strip()
-                        key = []
-                        value = []
-                        quoted_value = False
-                else:
-                    quoted_value = True
-            elif quoted_value and character == '\\':
-                pass
+    output = {}
+    key, value = (), ()
+    escaped = False
+    state = GARBAGE
+    for i, c in enumerate(line):
+        i += 1
+        if state == GARBAGE:
+            if c > ' ' and c != '"' and c != '=':
+                key = (c,)
+                state = KEY
+            continue
+        if state == KEY:
+            if c > ' ' and c != '"' and c != '=':
+                state = KEY
+                key += (c,)
+            elif c == '=':
+                output["".join(key).strip()] = True
+                state = EQUAL
             else:
-                value.append(character)
-        last_character = character
-
-    if key and not value:
-        result[''.join(key).strip()] = None
-    elif value:
-        result[''.join(key).strip()] = ''.join(value).strip()
-    return result
+                output["".join(key).strip()] = True
+                state = GARBAGE
+            if i >= len(line):
+                output["".join(key).strip()] = True
+            continue
+        if state == EQUAL:
+            if c > ' ' and c != '"' and c != '=':
+                value = (c,)
+                state = IVALUE
+            elif c == '"':
+                value = ()
+                escaped = False
+                state = QVALUE
+            else:
+                state = GARBAGE
+            if i >= len(line):
+                output["".join(key).strip()] = True
+            continue
+        if state == IVALUE:
+            if not (c > ' ' and c != '"' and c != '='):
+                output["".join(key).strip()] = "".join(value)
+                state = GARBAGE
+            else:
+                value += (c,)
+            if i >= len(line):
+                output["".join(key).strip()] = "".join(value)
+            continue
+        if state == QVALUE:
+            if c == '\\':
+                escaped = True
+            elif c == '"':
+                if escaped:
+                    escaped = False
+                    value += (c,)
+                    continue
+                output["".join(key).strip()] = "".join(value)
+                state = GARBAGE
+            else:
+                value += (c,)
+            continue
+    return output
