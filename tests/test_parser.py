@@ -64,3 +64,7 @@ class ParserTestCase(TestCase):
     def test_pair_with_empty_quote(self):
         data = parse_line('key=""')
         self.assertEqual(data, {'key': ""})
+
+    def test_single_character_value_at_end_of_string(self):
+        data = parse_line('key=a')
+        self.assertEqual(data, {'key': 'a'})
