@@ -43,7 +43,7 @@ def parse_line(line):
             else:
                 state = GARBAGE
             if i >= len(line):
-                output["".join(key).strip()] = True
+                output["".join(key).strip()] = "".join(value) or True
             continue
         if state == IVALUE:
             if not (c > ' ' and c != '"' and c != '='):
