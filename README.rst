@@ -24,6 +24,22 @@ This program produces this output: ::
     {'key1': 'value1'}
     {'key2': 'value2'}
 
+
+Easily generate lines in `logfmt` formatted output ::
+
+    from logfmt import format
+
+    for line in format({'key1': 'value1'}, {'key2': 'value2'}):
+        print line
+
+
+This program produces this output: ::
+    
+    key1="value1"
+    key2="value2"
+
+
+
 Installation
 ------------
 
