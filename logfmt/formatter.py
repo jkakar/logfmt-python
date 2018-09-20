@@ -16,7 +16,7 @@ def format_line(extra):
         else:
             if isinstance(v, (dict, object)):
                 v = str(v)
-            v = '"%s"' % v.replace('"', '\\' + '"')
+            v = '"%s"' % v.replace('"', '\\"')
         outarr.append("%s=%s" % (k, v))
     return " ".join(outarr)
 
@@ -24,8 +24,8 @@ def format_line(extra):
 class LogfmtFormatter(logging.Formatter):
     def format(self, record):
         return ' '.join([
-            f'at={record.levelname}',
-            f'msg="{record.msg}"',
-            f'process={record.processName}',
+            'at=%' % record.levelname,
+            'msg="%"' % record.getMessage().replace('"', '\\"'),
+            'process=%' % record.processName,
             format_line(getattr(record, 'context', {})),
         ])
