@@ -1,3 +1,5 @@
+This project is now managed by @wlonk at https://github.com/wlonk/logfmt-python.
+
 .. image:: https://secure.travis-ci.org/jkakar/logfmt-python.png?branch=master 
 
 Logfmt
